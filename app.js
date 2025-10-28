@@ -3,9 +3,9 @@ const CONFIG = {
     // GitHub OAuth App Client ID (get from GitHub OAuth App settings)
     GITHUB_CLIENT_ID: 'YOUR_GITHUB_OAUTH_CLIENT_ID',
     
-    // Fine-grained Personal Access Token with Actions:write permission
-    // Generate at: https://github.com/settings/tokens?type=beta
-    GITHUB_PAT: 'YOUR_GITHUB_PAT_WITH_ACTIONS_WRITE',
+    // Classic Personal Access Token with public_repo or repo scope
+    // Generate at: https://github.com/settings/tokens
+    GITHUB_PAT: 'YOUR_GITHUB_CLASSIC_PAT',
     
     // Repository details
     REPO_OWNER: 'SingularityNET-Archive',
@@ -114,7 +114,7 @@ meetingForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     
     // Validate configuration
-    if (CONFIG.GITHUB_PAT === 'YOUR_GITHUB_PAT_WITH_ACTIONS_WRITE') {
+    if (CONFIG.GITHUB_PAT === 'YOUR_GITHUB_CLASSIC_PAT') {
         showAlert('⚠️ Please configure GITHUB_PAT in app.js', 'error');
         return;
     }

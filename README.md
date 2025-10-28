@@ -39,17 +39,21 @@ Add the following secrets to your GitHub repository:
 
 ### 3. Generate a Personal Access Token (PAT)
 
-The frontend needs a fine-grained PAT to trigger workflows:
+The frontend needs a classic PAT to trigger workflows:
 
-1. Go to [GitHub Token Settings](https://github.com/settings/tokens?type=beta)
-2. Click **"Generate new token"** → **"Fine-grained token"**
+1. Go to [GitHub Token Settings (Classic)](https://github.com/settings/tokens)
+2. Click **"Generate new token"** → **"Generate new token (classic)"**
 3. Configure the token:
-   - **Token name**: `Meeting Archive Workflow Trigger`
-   - **Expiration**: Choose your preferred duration
-   - **Repository access**: Select **"Only select repositories"** → Choose `Prototype-Meeting-Archives`
-   - **Permissions** → **Repository permissions**:
-     - **Actions**: Read and write access
+   - **Note**: `Meeting Archive Workflow Trigger`
+   - **Expiration**: Choose your preferred duration (90 days recommended)
+   - **Select scopes**:
+     - ✅ **`public_repo`** (if repository is public) - Access public repositories
+     - ✅ **`repo`** (if repository is private) - Full control of private repositories
+     - Note: Either scope includes the ability to trigger Actions workflows
 4. Click **"Generate token"** and **save it securely**
+5. The token will start with `ghp_`
+
+**Note**: We use classic PATs instead of fine-grained PATs because organizations may restrict fine-grained token access. Classic tokens with `public_repo` scope are simpler and work reliably with organization repositories.
 
 ### 4. Update Frontend Configuration
 
@@ -60,8 +64,8 @@ const CONFIG = {
     // Replace with your GitHub OAuth App Client ID from step 1
     GITHUB_CLIENT_ID: 'Ov23abc123def456...',
     
-    // Replace with your fine-grained PAT from step 3
-    GITHUB_PAT: 'github_pat_11ABC...',
+    // Replace with your classic PAT from step 3 (starts with ghp_)
+    GITHUB_PAT: 'ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
     
     // These are already set correctly
     REPO_OWNER: 'SingularityNET-Archive',
@@ -160,7 +164,7 @@ git push origin main
 
 - OAuth client secret is stored in GitHub Actions secrets (never in code)
 - Access tokens never reach the frontend
-- Fine-grained PAT has minimal permissions (Actions:write only)
+- Classic PAT with minimal scope (public_repo for public repos)
 
 ### ⚠️ Important Notes
 
@@ -182,7 +186,7 @@ git push origin main
 
 ### "Error: Failed to submit meeting"
 
-- Verify your GitHub PAT in `app.js` is valid and has Actions:write permission
+- Verify your GitHub PAT in `app.js` is valid and has the correct scope (public_repo or repo)
 - Check GitHub Actions tab for workflow run errors
 - Ensure the workflow has `contents: write` permission
 

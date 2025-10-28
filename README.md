@@ -90,13 +90,11 @@ For GitHub Pages to work, we need to add your credentials as secrets:
 
 1. Go to **Settings** → **Secrets and variables** → **Actions**
 2. Click **"New repository secret"** and add:
-   - **Name**: `GITHUB_CLIENT_ID`
-   - **Value**: Your GitHub OAuth App Client ID from step 1
-3. Click **"New repository secret"** again and add:
-   - **Name**: `GITHUB_PAT`
+   - **Name**: `WORKFLOW_PAT`
    - **Value**: Your classic PAT from step 3
+3. (The `OAUTH_CLIENT_ID` secret should already exist from step 2)
 
-**Note**: These secrets are used by the GitHub Actions deployment workflow to generate `config.js` during deployment.
+**Note**: These secrets are used by the GitHub Actions deployment workflow to generate `config.js` during deployment. Secret names cannot start with `GITHUB_` as that's reserved by GitHub.
 
 ### 6. Enable GitHub Pages with GitHub Actions
 
@@ -215,13 +213,13 @@ This project includes a **GitHub Actions deployment workflow** (`.github/workflo
 3. ✅ Keeps your credentials secure (never in repository, only in secrets)
 
 **How it works:**
-- You store `GITHUB_CLIENT_ID` and `GITHUB_PAT` as repository secrets
+- You store `OAUTH_CLIENT_ID` and `WORKFLOW_PAT` as repository secrets
 - The deployment workflow reads these secrets and creates `config.js` during build
 - GitHub Pages serves the site with the generated config file
 - Your credentials never appear in the repository or git history
 
 **To deploy:**
-1. Add secrets `GITHUB_CLIENT_ID` and `GITHUB_PAT` (see step 5 in setup)
+1. Add secrets `OAUTH_CLIENT_ID` (step 2) and `WORKFLOW_PAT` (step 5)
 2. Enable GitHub Pages with source "GitHub Actions" (see step 6 in setup)
 3. Push to main branch - deployment happens automatically!
 
@@ -232,8 +230,8 @@ This project includes a **GitHub Actions deployment workflow** (`.github/workflo
 If you see "The config.js file is missing or not loaded" on the deployed site:
 
 1. **Add deployment secrets**: Go to Settings → Secrets → Actions and add:
-   - `GITHUB_CLIENT_ID` (your OAuth App Client ID)
-   - `GITHUB_PAT` (your classic PAT)
+   - `OAUTH_CLIENT_ID` (your OAuth App Client ID)
+   - `WORKFLOW_PAT` (your classic PAT)
 2. **Enable GitHub Actions for Pages**: Settings → Pages → Source: "GitHub Actions"
 3. **Trigger deployment**: Push to main branch or go to Actions tab and run "Deploy to GitHub Pages" manually
 4. **Wait for deployment**: Check the Actions tab to see deployment progress (takes 2-3 minutes)

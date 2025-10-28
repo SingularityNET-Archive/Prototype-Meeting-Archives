@@ -33,10 +33,10 @@ jobs:
           
           const CONFIG = {
               // GitHub OAuth App Client ID
-              GITHUB_CLIENT_ID: '${{ secrets.GITHUB_CLIENT_ID }}',
+              GITHUB_CLIENT_ID: '${{ secrets.OAUTH_CLIENT_ID }}',
               
               // GitHub Personal Access Token for triggering workflows
-              GITHUB_PAT: '${{ secrets.GITHUB_PAT }}',
+              GITHUB_PAT: '${{ secrets.WORKFLOW_PAT }}',
               
               // Repository details
               REPO_OWNER: 'SingularityNET-Archive',

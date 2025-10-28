@@ -174,7 +174,7 @@ meetingForm.addEventListener('submit', async (e) => {
         
         if (response.ok || response.status === 204) {
             // Success - workflow triggered
-            showAlert('✓ Meeting record submitted successfully! Processing in background...', 'success');
+            showAlert('✓ Meeting record submitted successfully! It will appear on the dashboard in 2-3 minutes.', 'success');
             
             // Reset form
             meetingForm.reset();

@@ -1,0 +1,126 @@
+name: Submit Meeting Record
+
+# Triggered by workflow_dispatch from the frontend
+on:
+  workflow_dispatch:
+    inputs:
+      oauth_code:
+        description: 'GitHub OAuth authorization code'
+        required: true
+        type: string
+      meeting_payload:
+        description: 'Meeting data as JSON string'
+        required: true
+        type: string
+
+# Grant write permissions to repository contents
+permissions:
+  contents: write
+
+jobs:
+  submit-meeting:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      # Step 2: Exchange OAuth code for access token
+      - name: Exchange OAuth code for token
+        id: oauth
+        run: |
+          echo "Exchanging OAuth code for access token..."
+          
+          # Make POST request to GitHub OAuth token endpoint
+          RESPONSE=$(curl -s -X POST https://github.com/login/oauth/access_token \
+            -H "Accept: application/json" \
+            -d "client_id=${{ secrets.OAUTH_CLIENT_ID }}" \
+            -d "client_secret=${{ secrets.OAUTH_CLIENT_SECRET }}" \
+            -d "code=${{ github.event.inputs.oauth_code }}")
+          
+          echo "OAuth response received"
+          
+          # Extract access token from response
+          ACCESS_TOKEN=$(echo "$RESPONSE" | jq -r '.access_token')
+          
+          if [ "$ACCESS_TOKEN" == "null" ] || [ -z "$ACCESS_TOKEN" ]; then
+            echo "Error: Failed to exchange OAuth code for token"
+            echo "$RESPONSE" | jq '.'
+            exit 1
+          fi
+          
+          echo "access_token=$ACCESS_TOKEN" >> $GITHUB_OUTPUT
+          echo "✓ OAuth token obtained successfully"
+      
+      # Step 3: Get authenticated user's GitHub username
+      - name: Get GitHub username
+        id: user
+        run: |
+          echo "Fetching authenticated user information..."
+          
+          # Call GitHub API to get user info
+          USER_RESPONSE=$(curl -s -H "Authorization: Bearer ${{ steps.oauth.outputs.access_token }}" \
+            https://api.github.com/user)
+          
+          # Extract username
+          USERNAME=$(echo "$USER_RESPONSE" | jq -r '.login')
+          
+          if [ "$USERNAME" == "null" ] || [ -z "$USERNAME" ]; then
+            echo "Error: Failed to retrieve GitHub username"
+            echo "$USER_RESPONSE" | jq '.'
+            exit 1
+          fi
+          
+          echo "username=$USERNAME" >> $GITHUB_OUTPUT
+          echo "✓ Authenticated user: $USERNAME"
+      
+      # Step 4: Process and append meeting data
+      - name: Append meeting to data file
+        run: |
+          echo "Processing meeting submission..."
+          
+          # Parse meeting payload from input
+          MEETING_DATA='${{ github.event.inputs.meeting_payload }}'
+          
+          # Add submitted_by and timestamp to meeting record
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          
+          # Create complete meeting record with metadata
+          COMPLETE_RECORD=$(echo "$MEETING_DATA" | jq \
+            --arg user "${{ steps.user.outputs.username }}" \
+            --arg ts "$TIMESTAMP" \
+            '. + {submitted_by: $user, timestamp: $ts}')
+          
+          echo "Meeting record:"
+          echo "$COMPLETE_RECORD" | jq '.'
+          
+          # Read existing meetings, append new record, write back
+          if [ ! -f data/meetings.json ]; then
+            echo "[]" > data/meetings.json
+          fi
+          
+          jq --argjson new "$COMPLETE_RECORD" '. += [$new]' data/meetings.json > data/meetings.tmp.json
+          mv data/meetings.tmp.json data/meetings.json
+          
+          echo "✓ Meeting appended to data/meetings.json"
+      
+      # Step 5: Commit and push changes
+      - name: Commit changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          
+          git add data/meetings.json
+          
+          # Check if there are changes to commit
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Add meeting record submitted by ${{ steps.user.outputs.username }}"
+            git push
+            echo "✓ Changes committed and pushed successfully"
+          fi
+

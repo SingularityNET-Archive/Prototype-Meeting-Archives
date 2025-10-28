@@ -84,17 +84,30 @@ The frontend needs a classic PAT to trigger workflows:
 
 **Note**: `config.js` is gitignored and will NEVER be committed to the repository. This keeps your credentials secure.
 
-### 5. Enable GitHub Pages
+### 5. Add Deployment Secrets for GitHub Pages
+
+For GitHub Pages to work, we need to add your credentials as secrets:
+
+1. Go to **Settings** → **Secrets and variables** → **Actions**
+2. Click **"New repository secret"** and add:
+   - **Name**: `GITHUB_CLIENT_ID`
+   - **Value**: Your GitHub OAuth App Client ID from step 1
+3. Click **"New repository secret"** again and add:
+   - **Name**: `GITHUB_PAT`
+   - **Value**: Your classic PAT from step 3
+
+**Note**: These secrets are used by the GitHub Actions deployment workflow to generate `config.js` during deployment.
+
+### 6. Enable GitHub Pages with GitHub Actions
 
 1. Go to **Settings** → **Pages**
 2. Under **Source**, select:
-   - **Branch**: `main` (or `master`)
-   - **Folder**: `/ (root)`
-3. Click **Save**
-4. Wait a few minutes for GitHub Pages to deploy
+   - **Source**: `GitHub Actions`
+3. The site will automatically deploy on every push to main
+4. Wait a few minutes for the first deployment
 5. Your site will be available at: `https://singularitynet-archive.github.io/Prototype-Meeting-Archives/`
 
-### 6. Commit and Push (Safe - No Credentials Included)
+### 7. Commit and Push (Safe - No Credentials Included)
 
 Since `config.js` is gitignored, your credentials will NOT be committed:
 
@@ -195,22 +208,40 @@ git push origin main
 
 ### 🌐 Deploying to GitHub Pages
 
-For GitHub Pages deployment, since `config.js` is gitignored, you have two options:
+This project includes a **GitHub Actions deployment workflow** (`.github/workflows/deploy-pages.yml`) that automatically:
 
-**Option 1: GitHub Actions Build Step** (Recommended for production)
-- Create a GitHub Actions workflow that injects secrets during deployment
-- Use `secrets.GITHUB_CLIENT_ID` and `secrets.GITHUB_PAT` to generate `config.js` at build time
+1. ✅ Generates `config.js` from repository secrets during deployment
+2. ✅ Deploys to GitHub Pages on every push to main
+3. ✅ Keeps your credentials secure (never in repository, only in secrets)
 
-**Option 2: Manual Configuration**
-- After GitHub Pages deploys, manually upload `config.js` to the Pages branch
-- Note: This is less secure and harder to maintain
+**How it works:**
+- You store `GITHUB_CLIENT_ID` and `GITHUB_PAT` as repository secrets
+- The deployment workflow reads these secrets and creates `config.js` during build
+- GitHub Pages serves the site with the generated config file
+- Your credentials never appear in the repository or git history
+
+**To deploy:**
+1. Add secrets `GITHUB_CLIENT_ID` and `GITHUB_PAT` (see step 5 in setup)
+2. Enable GitHub Pages with source "GitHub Actions" (see step 6 in setup)
+3. Push to main branch - deployment happens automatically!
 
 ## 🐛 Troubleshooting
+
+### "Configuration Missing" on GitHub Pages
+
+If you see "The config.js file is missing or not loaded" on the deployed site:
+
+1. **Add deployment secrets**: Go to Settings → Secrets → Actions and add:
+   - `GITHUB_CLIENT_ID` (your OAuth App Client ID)
+   - `GITHUB_PAT` (your classic PAT)
+2. **Enable GitHub Actions for Pages**: Settings → Pages → Source: "GitHub Actions"
+3. **Trigger deployment**: Push to main branch or go to Actions tab and run "Deploy to GitHub Pages" manually
+4. **Wait for deployment**: Check the Actions tab to see deployment progress (takes 2-3 minutes)
 
 ### "Error: Authentication failed"
 
 - Check that `OAUTH_CLIENT_ID` and `OAUTH_CLIENT_SECRET` are set correctly in repository secrets
-- Verify that the Client ID in `app.js` matches your OAuth App
+- Verify that the Client ID matches your OAuth App
 
 ### "Error: Workflow file not found"
 

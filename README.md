@@ -55,24 +55,34 @@ The frontend needs a classic PAT to trigger workflows:
 
 **Note**: We use classic PATs instead of fine-grained PATs because organizations may restrict fine-grained token access. Classic tokens with `public_repo` scope are simpler and work reliably with organization repositories.
 
-### 4. Update Frontend Configuration
+### 4. Create Your Local Configuration File
 
-Edit `app.js` and update the `CONFIG` object:
+**Important**: Never commit credentials to the repository!
 
-```javascript
-const CONFIG = {
-    // Replace with your GitHub OAuth App Client ID from step 1
-    GITHUB_CLIENT_ID: 'Ov23abc123def456...',
-    
-    // Replace with your classic PAT from step 3 (starts with ghp_)
-    GITHUB_PAT: 'ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-    
-    // These are already set correctly
-    REPO_OWNER: 'SingularityNET-Archive',
-    REPO_NAME: 'Prototype-Meeting-Archives',
-    REDIRECT_URI: 'https://singularitynet-archive.github.io/Prototype-Meeting-Archives/'
-};
-```
+1. Copy the example config file:
+   ```bash
+   cp config.example.js config.js
+   ```
+
+2. Edit `config.js` and add your credentials:
+   ```javascript
+   const CONFIG = {
+       // Replace with your GitHub OAuth App Client ID from step 1
+       GITHUB_CLIENT_ID: 'Ov23abc123def456...',
+       
+       // Replace with your classic PAT from step 3 (starts with ghp_)
+       GITHUB_PAT: 'ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+       
+       // These are already set correctly
+       REPO_OWNER: 'SingularityNET-Archive',
+       REPO_NAME: 'Prototype-Meeting-Archives',
+       REDIRECT_URI: 'https://singularitynet-archive.github.io/Prototype-Meeting-Archives/'
+   };
+   ```
+
+3. **Verify** that `config.js` is listed in `.gitignore` (it should be by default)
+
+**Note**: `config.js` is gitignored and will NEVER be committed to the repository. This keeps your credentials secure.
 
 ### 5. Enable GitHub Pages
 
@@ -84,13 +94,17 @@ const CONFIG = {
 4. Wait a few minutes for GitHub Pages to deploy
 5. Your site will be available at: `https://singularitynet-archive.github.io/Prototype-Meeting-Archives/`
 
-### 6. Commit and Push
+### 6. Commit and Push (Safe - No Credentials Included)
+
+Since `config.js` is gitignored, your credentials will NOT be committed:
 
 ```bash
 git add .
 git commit -m "Initial setup of meeting archive system"
 git push origin main
 ```
+
+**Verify**: Make sure `config.js` is NOT in your git status output before committing!
 
 ## 🎯 How It Works
 
@@ -128,6 +142,9 @@ git push origin main
 │       └── submit_meeting.yml    # Workflow to process submissions
 ├── data/
 │   └── meetings.json             # Meeting records storage
+├── .gitignore                    # Keeps config.js private
+├── config.example.js             # Template for configuration
+├── config.js                     # Your credentials (gitignored, not in repo)
 ├── index.html                    # Main submission form
 ├── app.js                        # Frontend JavaScript
 ├── dashboard.html                # View all meetings
@@ -162,15 +179,31 @@ git push origin main
 
 ### ✅ Safe for Public Repositories
 
-- OAuth client secret is stored in GitHub Actions secrets (never in code)
-- Access tokens never reach the frontend
-- Classic PAT with minimal scope (public_repo for public repos)
+- ✅ **Credentials never committed**: `config.js` is gitignored and stays local
+- ✅ **OAuth client secret** is stored in GitHub Actions secrets (never in code)
+- ✅ **Access tokens** never reach the frontend
+- ✅ **Classic PAT** has minimal scope (public_repo for public repos)
+- ✅ **No secrets in repository**: Safe to share publicly
 
 ### ⚠️ Important Notes
 
-1. **PAT Expiration**: Remember to renew your PAT before it expires
-2. **OAuth Code**: Single-use only - frontend forces re-authentication after each submission
-3. **Public Data**: Meeting records in `data/meetings.json` are public (visible to anyone)
+1. **Local config.js**: Each user needs their own `config.js` file locally (never commit it!)
+2. **GitHub Pages deployment**: For production, you'll need to handle config differently (see below)
+3. **PAT Expiration**: Remember to renew your PAT before it expires
+4. **OAuth Code**: Single-use only - frontend forces re-authentication after each submission
+5. **Public Data**: Meeting records in `data/meetings.json` are public (visible to anyone)
+
+### 🌐 Deploying to GitHub Pages
+
+For GitHub Pages deployment, since `config.js` is gitignored, you have two options:
+
+**Option 1: GitHub Actions Build Step** (Recommended for production)
+- Create a GitHub Actions workflow that injects secrets during deployment
+- Use `secrets.GITHUB_CLIENT_ID` and `secrets.GITHUB_PAT` to generate `config.js` at build time
+
+**Option 2: Manual Configuration**
+- After GitHub Pages deploys, manually upload `config.js` to the Pages branch
+- Note: This is less secure and harder to maintain
 
 ## 🐛 Troubleshooting
 

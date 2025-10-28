@@ -1,19 +1,23 @@
-// Configuration - UPDATE THESE VALUES
-const CONFIG = {
-    // GitHub OAuth App Client ID (get from GitHub OAuth App settings)
-    GITHUB_CLIENT_ID: 'YOUR_GITHUB_OAUTH_CLIENT_ID',
-    
-    // Classic Personal Access Token with public_repo or repo scope
-    // Generate at: https://github.com/settings/tokens
-    GITHUB_PAT: 'YOUR_GITHUB_CLASSIC_PAT',
-    
-    // Repository details
-    REPO_OWNER: 'SingularityNET-Archive',
-    REPO_NAME: 'Prototype-Meeting-Archives',
-    
-    // OAuth redirect URI (must match GitHub OAuth App settings)
-    REDIRECT_URI: 'https://singularitynet-archive.github.io/Prototype-Meeting-Archives/'
-};
+// Configuration is loaded from config.js (which is gitignored)
+// If CONFIG is not defined, show an error
+if (typeof CONFIG === 'undefined') {
+    document.body.innerHTML = `
+        <div style="max-width: 600px; margin: 50px auto; padding: 30px; background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px;">
+            <h2 style="color: #856404;">⚠️ Configuration Missing</h2>
+            <p style="color: #856404;">The <code>config.js</code> file is missing or not loaded.</p>
+            <p style="color: #856404;">Please:</p>
+            <ol style="color: #856404;">
+                <li>Copy <code>config.example.js</code> to <code>config.js</code></li>
+                <li>Fill in your OAuth Client ID and PAT</li>
+                <li>Refresh the page</li>
+            </ol>
+            <p style="color: #856404; font-size: 0.9em; margin-top: 20px;">
+                <strong>Note:</strong> <code>config.js</code> is gitignored and will never be committed to the repository.
+            </p>
+        </div>
+    `;
+    throw new Error('CONFIG not defined. Please create config.js from config.example.js');
+}
 
 // DOM elements
 const loginSection = document.getElementById('loginSection');
@@ -89,7 +93,7 @@ function showFormSection() {
 loginBtn.addEventListener('click', () => {
     // Validate configuration
     if (CONFIG.GITHUB_CLIENT_ID === 'YOUR_GITHUB_OAUTH_CLIENT_ID') {
-        showAlert('⚠️ Please configure GITHUB_CLIENT_ID in app.js', 'error');
+        showAlert('⚠️ Please configure your credentials in config.js', 'error');
         return;
     }
     
@@ -115,7 +119,7 @@ meetingForm.addEventListener('submit', async (e) => {
     
     // Validate configuration
     if (CONFIG.GITHUB_PAT === 'YOUR_GITHUB_CLASSIC_PAT') {
-        showAlert('⚠️ Please configure GITHUB_PAT in app.js', 'error');
+        showAlert('⚠️ Please configure your credentials in config.js', 'error');
         return;
     }
     

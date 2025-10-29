@@ -1,9 +1,11 @@
 name: Deploy to GitHub Pages
 
-# Trigger on push to main branch or manual dispatch
+# Trigger on push to main branch, data changes, or manual dispatch
 on:
   push:
     branches: [main]
+    paths:
+      - '**'  # Deploy on any change to main
   workflow_dispatch:
 
 # Grant GITHUB_TOKEN the permissions required to deploy to Pages
